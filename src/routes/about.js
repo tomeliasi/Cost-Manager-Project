@@ -3,12 +3,14 @@ import { logEndpointAccess } from "../middleware/requestLogger.js";
 import team from "../config/team.js";
 
 const router = Router();
-router.get("/", async (req, res) => {
+
+// GET /api/about
+router.get("/", async (_req, res) => {
   try {
     await logEndpointAccess("/api/about");
-    return res.json(team);
+    res.json(team);
   } catch (err) {
-    return res.status(500).json({ error: err?.message ?? "unknown error" });
+    res.status(500).json({ error: err?.message ?? "unknown error" });
   }
 });
 

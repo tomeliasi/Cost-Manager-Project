@@ -1,62 +1,63 @@
 import { Router } from "express";
 import { getMonthlyReport } from "../services/reportService.js";
 import { logEndpointAccess } from "../middleware/requestLogger.js";
-const CATEGORIES = ["food", "health", "housing", "sports", "education"];
+
+// Fixed categories order for the response
+const CATEGORIES = ["food", "education", "health", "housing", "sports"];
 
 const router = Router();
 
+// GET /api/report?id=123123&year=2025&month=9
 router.get("/", async (req, res) => {
   try {
     await logEndpointAccess("/api/report");
 
-    const { id, year, month } = req.query;
-    const userid = Number(id);
-    if (!Number.isInteger(userid)) {
+    const userId = Number(req.query.id);
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+
+    if (!Number.isInteger(userId)) {
       return res.status(400).json({ error: "id must be an integer" });
     }
-    const y = Number(year);
-    if (!Number.isInteger(y)) {
+    if (!Number.isInteger(year)) {
       return res.status(400).json({ error: "year must be an integer" });
     }
-    const m = Number(month);
-    if (!Number.isInteger(m) || m < 1 || m > 12) {
-      return res.status(400).json({ error: "month must be an integer between 1 and 12" });
+    if (!Number.isInteger(month) || month < 1 || month > 12) {
+      return res
+        .status(400)
+        .json({ error: "month must be an integer between 1 and 12" });
     }
 
-    // Build (and possibly load cached) report via the service.
-    // The service should implement the Computed Design Pattern:
-    //  - If (y,m) is in the past: read cached report if exists; otherwise compute once and save.
-    //  - If current/future: compute fresh without caching.
-    const report = await getMonthlyReport(userid, y, m);
+    const report = await getMonthlyReport(userId, year, month);
 
-    // Ensure the response matches the exact JSON shape and category order required by the spec:
-    // - costs must be an array with exactly one object per category key, in the defined order
-    // - each item array contains { sum, description, day } objects
-    // - categories with no items must exist with an empty array
-    const bucketsByCat = new Map();
-    // Normalize any incoming shape into a map for easy merge
+    // normalize to exact shape & order
+    const bucketsByCategory = new Map();
     for (const entry of Array.isArray(report.costs) ? report.costs : []) {
-      const k = Object.keys(entry)[0];
-      if (CATEGORIES.includes(k)) bucketsByCat.set(k, Array.isArray(entry[k]) ? entry[k] : []);
+      const key = Object.keys(entry)[0];
+      if (CATEGORIES.includes(key)) {
+        bucketsByCategory.set(key, Array.isArray(entry[key]) ? entry[key] : []);
+      }
     }
 
-    const normalizedCosts = CATEGORIES.map((cat) => {
-      const items = (bucketsByCat.get(cat) ?? []).map((it) => ({
-        // Keep property names exactly as in the costs documents:
-        sum: Number(it.sum),                      // ensure numeric
-        description: String(it.description ?? ""),// ensure string
-        day: Number(it.day),                      // derived from cost.date by service
-      }))
-      // Optional: stable ordering by day ascending for readability
-      .sort((a, b) => a.day - b.day);
-
-      return { [cat]: items };
+    const normalizedCosts = CATEGORIES.map((category) => {
+      const items = (bucketsByCategory.get(category) ?? [])
+        .map((item) => ({
+          sum: Number(item.sum),
+          description: String(item.description ?? ""),
+          day: Number(item.day),
+        }))
+        .sort((a, b) => a.day - b.day); // stable by day
+      return { [category]: items };
     });
 
-    // Send the final, spec-compliant payload
-    return res.json({ userid, year: y, month: m, costs: normalizedCosts });
+    // final payload
+    return res.json({
+      userid: userId,
+      year,
+      month,
+      costs: normalizedCosts,
+    });
   } catch (err) {
-    // Return JSON error per requirement
     return res.status(400).json({ error: err?.message ?? "unknown error" });
   }
 });
