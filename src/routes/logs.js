@@ -3,13 +3,16 @@ import { Log } from "../models/log.model.js";
 import { logEndpointAccess } from "../middleware/requestLogger.js";
 
 const router = Router();
-router.get("/", async (req, res, next) => {
+
+// GET /api/logs → last 1000 logs
+router.get("/", async (_req, res, next) => {
   try {
     await logEndpointAccess("/api/logs");
-    const logs = await Log.find().sort({ at: -1 }).lean();
+    const logs = await Log.find().sort({ at: -1 }).limit(1000).lean();
     res.json(logs);
-  } catch (e) {
-    next(e);
+  } catch (err) {
+    next(err);
   }
 });
+
 export default router;
