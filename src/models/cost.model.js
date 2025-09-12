@@ -2,28 +2,15 @@ import mongoose from "mongoose";
 
 const costSchema = new mongoose.Schema(
   {
-    description: {
-        type: String,
-        required: true // The description of the cost is mandatory
-    },
+    description: { type: String, required: true }, // what was bought
     category: {
-        type: String,
-        required: true, // The category is required
-        enum: ['food', 'health', 'housing', 'sport', 'education', 'fruit'],
-        // The category must be one of the predefined values
+      type: String,
+      required: true,
+      enum: ["food", "health", "housing", "sports", "education"], // fixed list
     },
-    userid: {
-        type: String,
-        required: true // The user ID associated with the cost is required
-    },
-    sum: {
-        type: Number,
-        required: true // The cost amount is mandatory
-    },
-    date: {
-        type: Date,
-        default: Date.now // If no date is provided, the current date is used by default
-    },
+    userid: { type: Number, required: true }, // user ID (number)
+    sum: { type: Number, required: true }, // amount
+    date: { type: Date, default: Date.now }, // when it happened
   },
   { collection: "costs" }
 );

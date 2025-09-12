@@ -6,12 +6,13 @@ import { logEndpointAccess } from "../middleware/requestLogger.js";
 
 const router = Router();
 
+// POST /api/add
 router.post("/", async (req, res, next) => {
   try {
     await logEndpointAccess("/api/add");
-    const body = req.body || {};
+    const { body } = req || {};
 
-    // Heuristic: if request has User fields → create a new User
+    // Create User
     if (
       "id" in body &&
       "first_name" in body &&
@@ -24,10 +25,9 @@ router.post("/", async (req, res, next) => {
       return res.status(201).json(user);
     }
 
-    // Otherwise → expect a Cost object
+    // Create Cost
     const { description, category, userid, sum, date } = body;
 
-    // Validation
     assert(
       typeof description === "string" && description.trim(),
       "description required"
@@ -36,37 +36,27 @@ router.post("/", async (req, res, next) => {
       CATEGORIES.includes(category),
       `category must be one of: ${CATEGORIES.join(", ")}`
     );
-    assert(typeof userid === "string", "userid must be String");
-    assert(
-      typeof sum === "number" || typeof sum === "string",
-      "sum must be Number"
-    );
+    assert(typeof userid === "number", "userid must be Number");
+    assert(typeof sum === "number", "sum must be Number");
 
-    // Handle date: if provided → validate, otherwise → default now
-    let costDate = date ? new Date(date) : new Date();
+    const costDate = date ? new Date(date) : new Date();
     assert(!isNaN(costDate), "invalid date");
 
-    // Application rule: cannot add costs dated to past months
-    assert(
-      !isPastMonth(costDate.getUTCFullYear(), costDate.getUTCMonth() + 1),
-      "cannot add costs dated to past months"
-    );
+    // No backdating to past months
+    const year = costDate.getUTCFullYear();
+    const month = costDate.getUTCMonth() + 1;
+    assert(!isPastMonth(year, month), "cannot add costs dated to past months");
 
-    // Create the document in MongoDB
-    const created = await Cost.create({
+    const cost = await Cost.create({
       description,
       category,
       userid,
       sum,
       date: costDate,
     });
-
-    // Convert Decimal128/Number to clean JSON
-    const json = created.toObject();
-    json.sum = Number(json.sum);
-    return res.status(201).json(json);
-  } catch (e) {
-    next(e);
+    return res.status(201).json(cost.toObject());
+  } catch (err) {
+    next(err);
   }
 });
 
