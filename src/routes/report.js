@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { User } from "../models/user.model.js";
 import { getMonthlyReport } from "../services/reportService.js";
 import { logEndpointAccess } from "../middleware/requestLogger.js";
 
@@ -26,6 +27,11 @@ router.get("/", async (req, res) => {
       return res
         .status(400)
         .json({ error: "month must be an integer between 1 and 12" });
+    }
+
+    const userExists = await User.exists({ id: userId });
+    if (!userExists) {
+      return res.status(404).json({ error: "user not found" });
     }
 
     const report = await getMonthlyReport(userId, year, month);
