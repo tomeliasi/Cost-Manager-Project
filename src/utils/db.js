@@ -8,7 +8,8 @@ export async function connectToDB(mongoUri) {
     throw err;
   }
 
-  mongoose.set("strictQuery", true); // safer query parsing
+  // safer query parsing
+  mongoose.set("strictQuery", true);
   await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 15000 });
   return mongoose.connection;
 }
