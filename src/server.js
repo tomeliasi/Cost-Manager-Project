@@ -1,4 +1,3 @@
-// server.js
 import { buildApp } from "./app.js";
 import { connectToDB } from "./utils/db.js";
 
@@ -8,45 +7,45 @@ const MONGODB_URI = process.env.MONGODB_URI;
 let server;
 
 (async () => {
-  console.log("BOOT: starting server…");
+  console.log("[BOOT] Starting server...");
 
-  // נסה להתחבר ל-Mongo, אבל אל תפיל את האפליקציה אם זה נכשל
+  // Try to connect to MongoDB, but don't crash if it fails
   try {
-    console.log("DB: connecting…");
+    console.log("[DB] Attempting to connect...");
     await connectToDB(MONGODB_URI);
-    console.log("DB: connected ✅");
+    console.log("[DB] Connected successfully");
   } catch (err) {
-    console.error("DB: connection FAILED ❌", err?.message || err);
-    // ממשיכים הלאה – ה-API יעלה ויחזיר 500 בנקודות שדורשות DB
+    // Continue running so /health and non-DB routes are still available
+    console.error("[DB] Connection failed:", err?.message || err);
   }
 
   const app = buildApp();
 
-  // נקודת בריאות שתמיד זמינה
+  // Health check endpoint (always available)
   app.get("/health", (_req, res) => res.status(200).send("OK"));
 
   server = app.listen(PORT, () => {
-    console.log(`HTTP: listening on :${PORT}`);
+    console.log(`[HTTP] Server is listening on port ${PORT}`);
   });
 })().catch((e) => {
-  console.error("FATAL boot error:", e);
+  console.error("[BOOT] Fatal startup error:", e);
   process.exit(1);
 });
 
-// ניטור שגיאות גלובליות
+// Global error monitoring
 process.on("unhandledRejection", (e) => {
-  console.error("unhandledRejection:", e);
+  console.error("[PROC] Unhandled Promise Rejection:", e);
 });
 process.on("uncaughtException", (e) => {
-  console.error("uncaughtException:", e);
+  console.error("[PROC] Uncaught Exception:", e);
 });
 
-// סגירה אלגנטית (Render שולח SIGTERM בעת רידפלוי/כיבוי)
+// Graceful shutdown (Render sends SIGTERM on redeploy/stop)
 process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully…");
+  console.log("[PROC] SIGTERM received, shutting down gracefully...");
   if (server) {
     server.close(() => {
-      console.log("HTTP: closed. Bye.");
+      console.log("[HTTP] Server closed");
       process.exit(0);
     });
   } else {
