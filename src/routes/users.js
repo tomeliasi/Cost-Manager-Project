@@ -1,4 +1,4 @@
-// Users routes: list users and get user details (with total costs)
+/* Users routes: list users and get user details (with total costs) */
 
 import { Router } from "express";
 import { User } from "../models/user.model.js";
@@ -8,7 +8,7 @@ import { logEndpointAccess } from "../middleware/requestLogger.js";
 
 const router = Router();
 
-// GET /api/users → list all users
+/* GET /api/users → list all users */
 router.get("/", async (_req, res, next) => {
   try {
     await logEndpointAccess("/api/users");
@@ -19,7 +19,7 @@ router.get("/", async (_req, res, next) => {
   }
 });
 
-// GET /api/users/:id → user details + total sum of costs
+/* GET /api/users/:id → user details + total sum of costs */
 router.get("/:id", async (req, res, next) => {
   try {
     await logEndpointAccess("/api/users/:id");

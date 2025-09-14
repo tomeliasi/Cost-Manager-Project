@@ -4,7 +4,7 @@ import team from "../config/team.js";
 
 const router = Router();
 
-// GET /api/about
+/* GET /api/about */
 router.get("/", async (_req, res) => {
   try {
     await logEndpointAccess("/api/about");

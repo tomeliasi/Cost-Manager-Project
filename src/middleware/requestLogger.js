@@ -1,6 +1,6 @@
 import { Log } from "../models/log.model.js";
 
-// Logs every HTTP request after the response is sent
+/*Logs every HTTP request after the response is sent*/
 export function mongoRequestLogger(req, res, next) {
   const startedAt = Date.now();
 
@@ -17,7 +17,7 @@ export function mongoRequestLogger(req, res, next) {
   next();
 }
 
-// Marks an explicit endpoint access (manual marker inside routes)
+/*Marks an explicit endpoint access (manual marker inside routes)*/
 export function logEndpointAccess(path) {
   return Log.create({
     method: "INTERNAL",

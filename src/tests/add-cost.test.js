@@ -12,7 +12,7 @@ afterAll(async () => {
 test("POST /api/add adds cost (future/current month only)", async () => {
   const now = new Date();
   const year = now.getFullYear();
-  const month = now.getMonth() + 1; // current month
+  const month = now.getMonth() + 1; /* current month */
   const res = await request(app)
     .post("/api/add")
     .send({

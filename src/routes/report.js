@@ -3,12 +3,12 @@ import { User } from "../models/user.model.js";
 import { getMonthlyReport } from "../services/reportService.js";
 import { logEndpointAccess } from "../middleware/requestLogger.js";
 
-// Fixed categories order for the response
+/* Fixed categories order for the response */
 const CATEGORIES = ["food", "education", "health", "housing", "sports"];
 
 const router = Router();
 
-// GET /api/report?id=123123&year=2025&month=9
+/* GET /api/report?id=123123&year=2025&month=9 */
 router.get("/", async (req, res) => {
   try {
     await logEndpointAccess("/api/report");
@@ -36,7 +36,7 @@ router.get("/", async (req, res) => {
 
     const report = await getMonthlyReport(userId, year, month);
 
-    // normalize to exact shape & order
+    /* normalize to exact shape & order */
     const bucketsByCategory = new Map();
     for (const entry of Array.isArray(report.costs) ? report.costs : []) {
       const key = Object.keys(entry)[0];
@@ -52,11 +52,11 @@ router.get("/", async (req, res) => {
           description: String(item.description ?? ""),
           day: Number(item.day),
         }))
-        .sort((a, b) => a.day - b.day); // stable by day
+        .sort((a, b) => a.day - b.day); /* stable by day */
       return { [category]: items };
     });
 
-    // final payload
+    /* final payload */
     return res.json({
       userid: userId,
       year,

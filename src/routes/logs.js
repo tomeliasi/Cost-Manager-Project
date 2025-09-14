@@ -4,7 +4,7 @@ import { logEndpointAccess } from "../middleware/requestLogger.js";
 
 const router = Router();
 
-// GET /api/logs → last 1000 logs
+/* GET /api/logs → last 1000 logs */
 router.get("/", async (_req, res, next) => {
   try {
     await logEndpointAccess("/api/logs");

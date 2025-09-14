@@ -9,24 +9,25 @@ import report from "./routes/report.js";
 import logs from "./routes/logs.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
-dotenv.config(); // load env vars from .env
+/* load env vars from .env */
+dotenv.config(); 
 
 export function buildApp() {
   const app = express();
 
-  // Global middlewares
+  /* Global middlewares */
   app.use(express.json());
-  app.use(httpLogger); // HTTP logs (Pino)
-  app.use(mongoRequestLogger); // persist each request log to MongoDB
+  app.use(httpLogger); /* HTTP logs (Pino) */
+  app.use(mongoRequestLogger); /* persist each request log to MongoDB */
 
-  // Routes
+  /* Routes */
   app.use("/api/about", about);
   app.use("/api/users", users);
-  app.use("/api/add", add); // add user OR cost (by request body shape)
+  app.use("/api/add", add); /* add user OR cost (by request body shape) */
   app.use("/api/report", report);
   app.use("/api/logs", logs);
 
-  // Error handler
+  /* Error handler */
   app.use(errorHandler);
 
   return app;

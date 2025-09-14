@@ -6,13 +6,13 @@ import { logEndpointAccess } from "../middleware/requestLogger.js";
 
 const router = Router();
 
-// POST /api/add
+/* POST /api/add */
 router.post("/", async (req, res, next) => {
   try {
     await logEndpointAccess("/api/add");
     const { body } = req || {};
 
-    // Create User
+    /* Create User */
     if (
       "id" in body &&
       "first_name" in body &&
@@ -25,7 +25,7 @@ router.post("/", async (req, res, next) => {
       return res.status(201).json(user);
     }
 
-    // Create Cost
+    /* Create Cost */
     const { description, category, userid, sum, date } = body;
 
     assert(
@@ -42,7 +42,7 @@ router.post("/", async (req, res, next) => {
     const costDate = date ? new Date(date) : new Date();
     assert(!isNaN(costDate), "invalid date");
 
-    // No backdating to past months
+    /* No backdating to past months */
     const year = costDate.getUTCFullYear();
     const month = costDate.getUTCMonth() + 1;
     assert(!isPastMonth(year, month), "cannot add costs dated to past months");
